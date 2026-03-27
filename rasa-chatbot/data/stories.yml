@@ -1,0 +1,91 @@
+version: "3.1"
+
+stories:
+  - story: complete booking flow
+    steps:
+      - intent: greet
+      - action: action_greet
+      - intent: select_language
+      - action: action_set_language
+      - intent: select_museum
+      - action: action_set_museum
+      - intent: book_tickets
+      - action: action_start_booking
+      - intent: provide_date
+      - action: action_process_date
+      - intent: select_time_slot
+      - action: action_set_time_slot
+      - intent: select_category
+      - action: action_set_category
+      - intent: select_quantity
+      - action: action_set_quantity
+      - intent: confirm_booking
+      - action: action_confirm_payment
+
+  - story: cancel during booking
+    steps:
+      - intent: greet
+      - action: action_greet
+      - intent: select_language
+      - action: action_set_language
+      - intent: select_museum
+      - action: action_set_museum
+      - intent: book_tickets
+      - action: action_start_booking
+      - intent: cancel_booking
+      - action: action_booking_cancelled
+      - action: action_main_menu
+
+  - story: museum info flow
+    steps:
+      - intent: museum_info
+      - action: action_info_menu
+      - intent: ask_history
+      - action: action_show_museum_history
+
+  - story: museum galleries
+    steps:
+      - intent: museum_info
+      - action: action_info_menu
+      - intent: ask_galleries
+      - action: action_show_galleries
+
+  - story: museum hours
+    steps:
+      - intent: ask_hours
+      - action: action_show_hours
+
+  - story: museum rules
+    steps:
+      - intent: ask_rules
+      - action: action_show_rules
+
+  - story: museum events
+    steps:
+      - intent: ask_events
+      - action: action_show_events
+
+  - story: museum contact
+    steps:
+      - intent: ask_contact
+      - action: action_show_contact
+
+  - story: faq flow
+    steps:
+      - intent: ask_faq
+      - action: action_faq_menu
+
+  - story: change museum
+    steps:
+      - intent: change_museum
+      - action: action_change_museum
+
+  - story: goodbye
+    steps:
+      - intent: goodbye
+      - action: action_goodbye
+
+  - story: thank user
+    steps:
+      - intent: thank
+      - action: action_thank

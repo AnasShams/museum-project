@@ -12,7 +12,7 @@ export default function Payment() {
 
     useEffect(() => {
         if (!bookingDetails) {
-            navigate('/book-tickets');
+            navigate('/museums');
             return;
         }
         const timer = setInterval(() => {
@@ -29,6 +29,7 @@ export default function Payment() {
 
     if (!bookingDetails) return null;
 
+    const museumName = bookingDetails.museumName || 'Museum';
     const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
 
     function handlePayment() {
@@ -41,7 +42,8 @@ export default function Payment() {
     const qrData = JSON.stringify({
         id: bookingDetails.bookingId,
         amount: bookingDetails.totalAmount,
-        museum: 'National Museum',
+        museum: museumName,
+        upi: `museumpass@upi`,
     });
 
     return (
@@ -51,7 +53,7 @@ export default function Payment() {
                     <h1 className="text-3xl md:text-4xl font-heading font-bold text-soft-white mb-2">
                         Secure <span className="text-gradient-gold">Payment</span>
                     </h1>
-                    <p className="text-lgray">Complete your payment to confirm booking</p>
+                    <p className="text-lgray">Complete your payment to confirm booking at <strong>{museumName}</strong></p>
                 </div>
             </div>
 
@@ -133,6 +135,10 @@ export default function Payment() {
                                 <span className="font-mono font-medium text-navy">{bookingDetails.bookingId}</span>
                             </div>
                             <div className="flex justify-between py-2 border-b border-lgray/30">
+                                <span className="text-lgray-dark">Museum</span>
+                                <span className="font-medium text-navy">{museumName}</span>
+                            </div>
+                            <div className="flex justify-between py-2 border-b border-lgray/30">
                                 <span className="text-lgray-dark">Date</span>
                                 <span className="font-medium text-navy">{bookingDetails.date}</span>
                             </div>
@@ -140,8 +146,29 @@ export default function Payment() {
                                 <span className="text-lgray-dark">Time Slot</span>
                                 <span className="font-medium text-navy">{bookingDetails.timeSlotLabel}</span>
                             </div>
+                            {bookingDetails.breakdown ? (
+                                bookingDetails.breakdown.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between py-2 border-b border-lgray/30">
+                                        <span className="text-lgray-dark">{item.category} Tickets</span>
+                                        <span className="font-medium text-navy">{item.quantity} <span className="text-xs text-lgray-dark ml-1">(₹{item.price * item.quantity})</span></span>
+                                    </div>
+                                ))
+                            ) : bookingDetails.category && (
+                                <div className="flex justify-between py-2 border-b border-lgray/30">
+                                    <span className="text-lgray-dark">Category</span>
+                                    <span className="font-medium text-navy">{bookingDetails.category}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between py-2 border-b border-lgray/30">
-                                <span className="text-lgray-dark">Tickets</span>
+                                <span className="text-lgray-dark">Mobile</span>
+                                <span className="font-medium text-navy">{bookingDetails.mobile}</span>
+                            </div>
+                            <div className="flex justify-between py-2 border-b border-lgray/30">
+                                <span className="text-lgray-dark">Email</span>
+                                <span className="font-medium text-navy">{bookingDetails.email}</span>
+                            </div>
+                            <div className="flex justify-between py-2 border-b border-lgray/30">
+                                <span className="text-lgray-dark">Total Tickets</span>
                                 <span className="font-medium text-navy">{bookingDetails.totalTickets}</span>
                             </div>
                             <div className="flex justify-between py-3 bg-navy/5 rounded-xl px-3 mt-2">

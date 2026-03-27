@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createChatbotEngine } from '../../utils/chatbotEngine';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaUser, FaMinus } from 'react-icons/fa';
+
+const RASA_API_URL = '/api/rasa/webhooks/rest/webhook';
 
 export default function ChatWidget() {
     const [isOpen, setIsOpen] = useState(false);
@@ -9,24 +10,55 @@ export default function ChatWidget() {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [dateValue, setDateValue] = useState('');
+    const [sessionId] = useState(() => 'user_' + Date.now().toString(36));
     const messagesEndRef = useRef(null);
-    const engineRef = useRef(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        engineRef.current = createChatbotEngine();
-    }, []);
+    // Date limits
+    const today = new Date();
+    const minDate = today.toISOString().split('T')[0];
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 30);
+    const maxDateStr = maxDate.toISOString().split('T')[0];
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isTyping]);
 
-    function openChat() {
+    async function sendToRasa(message) {
+        try {
+            const response = await fetch(RASA_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    sender: sessionId,
+                    message: message,
+                }),
+            });
+
+            if (!response.ok) throw new Error('Rasa API error');
+            const data = await response.json();
+            return data; // Array of {recipient_id, text, buttons, custom}
+        } catch (error) {
+            console.error('Rasa API error:', error);
+            return [{
+                text: '⚠️ Connection error. Please make sure the Rasa server is running.\n\nStart it with:\nrasa run --enable-api --cors "*"',
+            }];
+        }
+    }
+
+    async function openChat() {
         setIsOpen(true);
         setIsMinimized(false);
-        if (messages.length === 0 && engineRef.current) {
-            const initial = engineRef.current.getInitialMessages();
-            setMessages(initial.map(msg => ({ ...msg, isBot: true, id: Date.now() + Math.random() })));
+        if (messages.length === 0) {
+            setIsTyping(true);
+            // Send initial greeting trigger to Rasa
+            const responses = await sendToRasa('/greet');
+            setIsTyping(false);
+            const botMsgs = responses.map((r, i) => parseRasaResponse(r, i));
+            setMessages(botMsgs);
         }
     }
 
@@ -34,52 +66,93 @@ export default function ChatWidget() {
         setIsOpen(false);
     }
 
-    function sendMessage(text) {
-        if (!text.trim()) return;
-        const userMsg = { text: text.trim(), isBot: false, id: Date.now() + Math.random() };
-        setMessages(prev => [...prev, userMsg]);
-        setInput('');
-        setIsTyping(true);
+    function parseRasaResponse(response, index = 0) {
+        const msg = {
+            text: response.text || '',
+            isBot: true,
+            id: Date.now() + index + Math.random(),
+        };
 
-        setTimeout(() => {
-            const responses = engineRef.current.processMessage(text.trim());
-            const botMsgs = responses.map((r, i) => ({
-                text: r.text,
-                isBot: true,
-                quickReplies: r.quickReplies,
-                action: r.action,
-                bookingData: r.bookingData,
-                id: Date.now() + i + Math.random(),
+        // Convert Rasa buttons to quickReplies format
+        if (response.buttons && response.buttons.length > 0) {
+            msg.quickReplies = response.buttons.map(btn => ({
+                text: btn.title,
+                value: btn.payload,
             }));
+        }
 
-            setIsTyping(false);
-            setMessages(prev => [...prev, ...botMsgs]);
-
-            // Handle payment redirect
-            const paymentMsg = botMsgs.find(m => m.action === 'REDIRECT_PAYMENT');
-            if (paymentMsg && paymentMsg.bookingData) {
-                setTimeout(() => {
-                    navigate('/payment', {
-                        state: {
-                            date: paymentMsg.bookingData.date,
-                            timeSlotLabel: paymentMsg.bookingData.timeSlot,
-                            totalTickets: paymentMsg.bookingData.quantity,
-                            totalAmount: paymentMsg.bookingData.total,
-                            bookingId: 'BK' + Date.now().toString().slice(-6),
-                        },
-                    });
-                }, 1500);
+        // Handle custom payloads from Rasa actions
+        if (response.custom) {
+            if (response.custom.type === 'date_input') {
+                msg.showDatePicker = true;
             }
-        }, 800 + Math.random() * 500);
+            if (response.custom.type === 'redirect_payment') {
+                msg.action = 'REDIRECT_PAYMENT';
+                msg.bookingData = response.custom.data;
+            }
+            if (response.custom.type === 'booking_summary') {
+                msg.bookingData = response.custom.data;
+            }
+        }
+
+        return msg;
     }
 
-    function handleQuickReply(value) {
-        sendMessage(value);
+    async function sendMessage(text, displayTitle = null) {
+        if (!text.trim()) return;
+        const userMsg = { text: displayTitle || text.trim(), isBot: false, id: Date.now() + Math.random() };
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+        setShowDatePicker(false);
+        setDateValue('');
+        setIsTyping(true);
+
+        const responses = await sendToRasa(text.trim());
+        setIsTyping(false);
+
+        const botMsgs = responses.map((r, i) => parseRasaResponse(r, i));
+        setMessages(prev => [...prev, ...botMsgs]);
+
+        // Show date picker if any message has the flag
+        const dateMsg = botMsgs.find(m => m.showDatePicker);
+        if (dateMsg) setShowDatePicker(true);
+
+        // Handle payment redirect
+        const paymentMsg = botMsgs.find(m => m.action === 'REDIRECT_PAYMENT');
+        if (paymentMsg && paymentMsg.bookingData) {
+            setTimeout(() => {
+                navigate('/payment', {
+                    state: {
+                        museumName: paymentMsg.bookingData.museumName,
+                        museumId: paymentMsg.bookingData.museumId,
+                        date: paymentMsg.bookingData.date,
+                        timeSlotLabel: paymentMsg.bookingData.timeSlot,
+                        category: paymentMsg.bookingData.category,
+                        breakdown: paymentMsg.bookingData.breakdown,
+                        totalTickets: paymentMsg.bookingData.quantity,
+                        totalAmount: paymentMsg.bookingData.total,
+                        mobile: paymentMsg.bookingData.mobile,
+                        email: paymentMsg.bookingData.email,
+                        bookingId: 'BK' + Date.now().toString().slice(-6),
+                    },
+                });
+            }, 1500);
+        }
+    }
+
+    function handleQuickReply(qr) {
+        sendMessage(qr.value, qr.text);
     }
 
     function handleSubmit(e) {
         e.preventDefault();
         sendMessage(input);
+    }
+
+    function handleDateSelect() {
+        if (dateValue) {
+            sendMessage(dateValue);
+        }
     }
 
     return (
@@ -92,7 +165,7 @@ export default function ChatWidget() {
                 >
                     <FaComments className="text-navy text-2xl group-hover:rotate-12 transition-transform" />
                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-white text-[10px] flex items-center justify-center font-bold animate-pulse">
-                        1
+                        AI
                     </span>
                 </button>
             )}
@@ -109,10 +182,10 @@ export default function ChatWidget() {
                                 <FaRobot className="text-navy text-sm" />
                             </div>
                             <div>
-                                <h3 className="text-soft-white font-bold text-sm">Museum Assistant</h3>
+                                <h3 className="text-soft-white font-bold text-sm">MuseumPass AI Assistant</h3>
                                 <p className="text-green-400 text-[10px] flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                                    Online
+                                    Powered by Rasa NLP
                                 </p>
                             </div>
                         </div>
@@ -145,8 +218,8 @@ export default function ChatWidget() {
                                                 </div>
                                             )}
                                             <div className={`max-w-[75%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${msg.isBot
-                                                    ? 'bg-royal text-white rounded-bl-md'
-                                                    : 'bg-lgray text-navy rounded-br-md'
+                                                ? 'bg-royal text-white rounded-bl-md'
+                                                : 'bg-lgray text-navy rounded-br-md'
                                                 }`}>
                                                 {msg.text}
                                             </div>
@@ -157,13 +230,13 @@ export default function ChatWidget() {
                                             )}
                                         </div>
 
-                                        {/* Quick Replies */}
+                                        {/* Quick Replies (from Rasa buttons) */}
                                         {msg.isBot && msg.quickReplies && (
                                             <div className="mt-2 ml-9 flex flex-wrap gap-1.5">
                                                 {msg.quickReplies.map((qr, i) => (
                                                     <button
                                                         key={i}
-                                                        onClick={() => handleQuickReply(qr.value)}
+                                                        onClick={() => handleQuickReply(qr)}
                                                         className="px-3 py-1.5 bg-white border border-royal/30 rounded-full text-xs text-royal font-medium hover:bg-royal hover:text-white transition-all duration-300 cursor-pointer"
                                                     >
                                                         {qr.text}
@@ -193,7 +266,28 @@ export default function ChatWidget() {
                                 <div ref={messagesEndRef} />
                             </div>
 
-                            {/* Input */}
+                            {/* Date Picker (shown when booking asks for date) */}
+                            {showDatePicker && (
+                                <div className="p-3 bg-gold/10 border-t border-gold/30 flex gap-2 flex-shrink-0">
+                                    <input
+                                        type="date"
+                                        value={dateValue}
+                                        min={minDate}
+                                        max={maxDateStr}
+                                        onChange={(e) => setDateValue(e.target.value)}
+                                        className="flex-1 px-3 py-2 rounded-xl bg-white border border-gold/50 text-sm focus:outline-none focus:ring-2 focus:ring-gold/30 transition-all"
+                                    />
+                                    <button
+                                        onClick={handleDateSelect}
+                                        disabled={!dateValue}
+                                        className="px-4 py-2 bg-gold rounded-xl text-navy text-sm font-medium hover:bg-gold-light transition-all disabled:opacity-30 cursor-pointer"
+                                    >
+                                        Select
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Text Input */}
                             <form onSubmit={handleSubmit} className="p-3 bg-white border-t border-lgray/50 flex gap-2 flex-shrink-0">
                                 <input
                                     type="text"

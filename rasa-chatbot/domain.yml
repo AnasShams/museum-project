@@ -1,0 +1,298 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - thank
+  - book_tickets
+  - museum_info
+  - ask_faq
+  - select_language
+  - select_museum
+  - provide_date
+  - select_time_slot
+  - select_category
+  - select_quantity
+  - confirm_booking
+  - cancel_booking
+  - add_more_tickets
+  - change_museum
+  - ask_history
+  - ask_galleries
+  - ask_hours
+  - ask_rules
+  - ask_events
+  - ask_contact
+  - faq_cancel
+  - faq_parking
+  - faq_wheelchair
+  - faq_cafe
+  - faq_guided_tour
+  - nlu_fallback
+  - provide_mobile_number
+  - provide_email
+
+entities:
+  - language
+  - museum_name
+  - date
+  - time_slot
+  - ticket_category
+  - quantity
+  - mobile_number
+  - email
+
+slots:
+  language:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: language
+  selected_museum:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: museum_name
+  booking_date:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: date
+  booking_time_slot:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: time_slot
+  booking_category:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: custom
+  booking_quantity:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: custom
+  booking_mobile:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: mobile_number
+  booking_email:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: email
+
+responses:
+  utter_greet:
+    - text: "🇮🇳 Welcome to MuseumPass Bangalore!\n\nI'm your AI-powered ticket booking assistant for Bangalore's finest museums.\n\nPlease select your language:"
+      buttons:
+        - title: "English"
+          payload: '/select_language{"language": "en"}'
+        - title: "हिंदी"
+          payload: '/select_language{"language": "hi"}'
+        - title: "ಕನ್ನಡ"
+          payload: '/select_language{"language": "kn"}'
+        - title: "தமிழ்"
+          payload: '/select_language{"language": "ta"}'
+        - title: "తెలుగు"
+          payload: '/select_language{"language": "te"}'
+        - title: "বাংলা"
+          payload: '/select_language{"language": "bn"}'
+        - title: "मराठी"
+          payload: '/select_language{"language": "mr"}'
+        - title: "ગુજરાતી"
+          payload: '/select_language{"language": "gu"}'
+        - title: "മലയാളം"
+          payload: '/select_language{"language": "ml"}'
+        - title: "ਪੰਜਾਬੀ"
+          payload: '/select_language{"language": "pa"}'
+        - title: "ଓଡ଼ିଆ"
+          payload: '/select_language{"language": "or"}'
+        - title: "অসমীয়া"
+          payload: '/select_language{"language": "as"}'
+        - title: "اردو"
+          payload: '/select_language{"language": "ur"}'
+
+  utter_language_confirmed:
+    - text: "✅ Language set! Now please select a museum:"
+      buttons:
+        - title: "🔬 Visvesvaraya Museum"
+          payload: '/select_museum{"museum_name": "visvesvaraya"}'
+        - title: "🏛️ Government Museum"
+          payload: '/select_museum{"museum_name": "govt-museum"}'
+        - title: "✈️ HAL Aerospace Museum"
+          payload: '/select_museum{"museum_name": "hal-aerospace"}'
+        - title: "🖼️ NGMA Bangalore"
+          payload: '/select_museum{"museum_name": "ngma"}'
+        - title: "🏰 Bangalore Palace"
+          payload: '/select_museum{"museum_name": "bangalore-palace"}'
+        - title: "🐅 Tipu Sultan's Palace"
+          payload: '/select_museum{"museum_name": "tipu-palace"}'
+        - title: "🌌 Nehru Planetarium"
+          payload: '/select_museum{"museum_name": "nehru-planetarium"}'
+        - title: "🎵 Indian Music Experience"
+          payload: '/select_museum{"museum_name": "ime"}'
+
+  utter_main_menu:
+    - text: "What would you like to do?"
+      buttons:
+        - title: "🎫 Book Tickets"
+          payload: "/book_tickets"
+        - title: "ℹ️ Museum Info"
+          payload: "/museum_info"
+        - title: "❓ FAQs"
+          payload: "/ask_faq"
+        - title: "📞 Contact"
+          payload: "/ask_contact"
+        - title: "🔄 Change Museum"
+          payload: "/change_museum"
+
+  utter_ask_date:
+    - text: "📅 Please enter your preferred visit date.\n\nUse format: YYYY-MM-DD (e.g., 2026-03-28)\nDate must be within the next 30 days."
+
+  utter_ask_time_slot:
+    - text: "⏰ Please select a time slot:"
+
+  utter_ask_category:
+    - text: "🎟️ Please select a ticket category:"
+
+  utter_ask_quantity:
+    - text: "🔢 How many tickets do you need? (1-10)"
+      buttons:
+        - title: "1"
+          payload: '/select_quantity{"quantity": "1"}'
+        - title: "2"
+          payload: '/select_quantity{"quantity": "2"}'
+        - title: "3"
+          payload: '/select_quantity{"quantity": "3"}'
+        - title: "4"
+          payload: '/select_quantity{"quantity": "4"}'
+        - title: "5"
+          payload: '/select_quantity{"quantity": "5"}'
+
+  utter_confirm_booking:
+    - text: "Would you like to proceed to payment?"
+      buttons:
+        - title: "✅ Confirm & Pay"
+          payload: "/confirm_booking"
+        - title: "❌ Cancel"
+          payload: "/cancel_booking"
+
+  utter_booking_cancelled:
+    - text: "❌ Booking cancelled. Feel free to start again anytime!"
+
+  utter_goodbye:
+    - text: "Thank you for using MuseumPass Bangalore! Have a wonderful day! 🌟"
+
+  utter_thank:
+    - text: "You're welcome! Is there anything else I can help you with?"
+      buttons:
+        - title: "🎫 Book Tickets"
+          payload: "/book_tickets"
+        - title: "ℹ️ Museum Info"
+          payload: "/museum_info"
+        - title: "👋 Goodbye"
+          payload: "/goodbye"
+
+  utter_info_menu:
+    - text: "ℹ️ What would you like to know about this museum?"
+      buttons:
+        - title: "🏛️ History"
+          payload: "/ask_history"
+        - title: "🖼️ Galleries"
+          payload: "/ask_galleries"
+        - title: "🕐 Hours"
+          payload: "/ask_hours"
+        - title: "📋 Rules"
+          payload: "/ask_rules"
+        - title: "🎪 Events"
+          payload: "/ask_events"
+        - title: "📍 Contact"
+          payload: "/ask_contact"
+        - title: "🔙 Back"
+          payload: "/book_tickets"
+
+  utter_faq_menu:
+    - text: "❓ Frequently Asked Questions:"
+      buttons:
+        - title: "❌ Cancel Booking?"
+          payload: "/faq_cancel"
+        - title: "🅿️ Parking?"
+          payload: "/faq_parking"
+        - title: "♿ Wheelchair?"
+          payload: "/faq_wheelchair"
+        - title: "☕ Cafe?"
+          payload: "/faq_cafe"
+        - title: "🗣️ Guided Tour?"
+          payload: "/faq_guided_tour"
+        - title: "🔙 Back"
+          payload: "/book_tickets"
+
+  utter_faq_cancel:
+    - text: "Yes! You can cancel your booking up to 24 hours before the visit for a full refund. Cancellations within 24 hours will incur a 20% fee."
+  utter_faq_parking:
+    - text: "Yes, most museums in Bangalore have parking facilities for both cars and two-wheelers."
+  utter_faq_wheelchair:
+    - text: "Absolutely! Wheelchairs are available free of charge at the entrance of most museums. The museums are accessible with ramps and elevators."
+  utter_faq_cafe:
+    - text: "Yes, most museums have a cafe or canteen offering snacks, beverages, and light meals during museum hours."
+  utter_faq_guided_tour:
+    - text: "Yes! Guided tours are available at most museums in multiple languages. Check with the specific museum for schedules and pricing."
+
+  utter_default:
+    - text: "🤔 I'm not sure I understand. Could you rephrase or choose from the options?"
+      buttons:
+        - title: "🎫 Book Tickets"
+          payload: "/book_tickets"
+        - title: "ℹ️ Museum Info"
+          payload: "/museum_info"
+        - title: "❓ FAQs"
+          payload: "/ask_faq"
+
+actions:
+  - action_set_language
+  - action_set_museum
+  - action_start_booking
+  - action_process_date
+  - action_show_time_slots
+  - action_set_time_slot
+  - action_show_categories
+  - action_set_category
+  - action_set_quantity
+  - action_show_booking_summary
+  - action_confirm_payment
+  - action_show_museum_history
+  - action_show_galleries
+  - action_show_hours
+  - action_show_rules
+  - action_show_events
+  - action_show_contact
+  - action_change_museum
+  - action_ask_booking_contact
+  - action_set_mobile
+  - action_set_email
+  - action_default_fallback
+  - action_greet
+  - action_goodbye
+  - action_thank
+  - action_main_menu
+  - action_booking_cancelled
+  - action_info_menu
+  - action_faq_menu
+  - action_faq_cancel
+  - action_faq_parking
+  - action_faq_wheelchair
+  - action_faq_cafe
+  - action_faq_guided_tour
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

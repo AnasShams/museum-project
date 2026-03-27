@@ -22,3 +22,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Rasa / Python
+rasa-chatbot/venv/
+rasa-chatbot/models/
+rasa-chatbot/.rasa/
+__pycache__/
+*.pyc
+
+# Environment keys
+.env

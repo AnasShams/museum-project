@@ -15,23 +15,6 @@ const STATES = {
     FAQ_MENU: 'FAQ_MENU',
 };
 
-const TIME_SLOTS = [
-    '10:00 AM - 11:30 AM',
-    '11:30 AM - 1:00 PM',
-    '1:00 PM - 2:30 PM',
-    '2:30 PM - 4:00 PM',
-    '4:00 PM - 5:30 PM',
-    '5:30 PM - 7:00 PM',
-];
-
-const CATEGORIES = [
-    { name: 'Adult', price: 300 },
-    { name: 'Child', price: 100 },
-    { name: 'Senior Citizen', price: 150 },
-    { name: 'Student', price: 150 },
-    { name: 'Foreign National', price: 650 },
-];
-
 export function createChatbotEngine() {
     let state = STATES.INIT;
     let language = 'en';
@@ -46,8 +29,30 @@ export function createChatbotEngine() {
         return chatbotResponses[language] || chatbotResponses.en;
     }
 
+    // Validate a date string: must be YYYY-MM-DD, not in the past, not >30 days away
+    function validateDate(dateStr) {
+        const dateRegex = /(\d{4}-\d{2}-\d{2})/;
+        const match = dateStr.match(dateRegex);
+        if (!match) return { valid: false, error: 'Please enter a valid date in YYYY-MM-DD format.\nExample: 2026-03-15' };
+
+        const date = new Date(match[0] + 'T00:00:00');
+        if (isNaN(date.getTime())) return { valid: false, error: 'Invalid date. Please enter a valid date.\nExample: 2026-03-15' };
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        if (date < tomorrow) return { valid: false, error: '❌ Date must be at least tomorrow. Please choose a future date.' };
+
+        const maxDate = new Date(today);
+        maxDate.setDate(maxDate.getDate() + 30);
+        if (date > maxDate) return { valid: false, error: '❌ Date must be within the next 30 days. Please choose an earlier date.' };
+
+        return { valid: true, date: match[0] };
+    }
+
     function getQuickReplies() {
-        const r = getResponses();
         switch (state) {
             case STATES.INIT:
             case STATES.LANGUAGE_SELECT:
@@ -77,32 +82,43 @@ export function createChatbotEngine() {
                     { text: 'ℹ️ Museum Info', value: 'info' },
                     { text: '❓ FAQs', value: 'faq' },
                     { text: '📞 Contact', value: 'contact' },
+                    { text: '🔄 Change Museum', value: 'change_museum' },
                 ];
+            case STATES.BOOKING_DATE:
+                return [{ text: '🔙 Back to Menu', value: 'back' }];
             case STATES.BOOKING_SLOT:
-                return getSelectedMuseum().timeSlots.map((slot, i) => ({
-                    text: `${i + 1}️⃣ ${slot.time}`,
-                    value: `slot_${i + 1}`,
-                }));
+                return [
+                    ...getSelectedMuseum().timeSlots.map((slot, i) => ({
+                        text: `🕐 ${slot.time}`,
+                        value: `slot_${i + 1}`,
+                    })),
+                    { text: '🔙 Back', value: 'back' },
+                ];
             case STATES.BOOKING_CATEGORY:
-                return getSelectedMuseum().ticketCategories.map((cat, i) => ({
-                    text: `${i + 1}️⃣ ${cat.name} - ₹${cat.price}`,
-                    value: `cat_${i + 1}`,
-                }));
+                return [
+                    ...getSelectedMuseum().ticketCategories.map((cat, i) => ({
+                        text: `${cat.name} - ₹${cat.price}`,
+                        value: `cat_${i + 1}`,
+                    })),
+                    { text: '🔙 Back', value: 'back' },
+                ];
             case STATES.BOOKING_QUANTITY:
-                return [1, 2, 3, 4, 5].map(n => ({
+                return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => ({
                     text: `${n}`,
                     value: `qty_${n}`,
                 }));
             case STATES.BOOKING_CONFIRM:
                 return [
-                    { text: '✅ Yes, Proceed', value: 'confirm_yes' },
+                    { text: '✅ Confirm & Pay', value: 'confirm_yes' },
                     { text: '❌ Cancel', value: 'confirm_no' },
                 ];
             case STATES.INFO_MENU:
                 return [
                     { text: '🏛️ History', value: 'info_history' },
+                    { text: '🖼️ Galleries', value: 'info_galleries' },
                     { text: '🕐 Hours', value: 'info_hours' },
                     { text: '📋 Rules', value: 'info_rules' },
+                    { text: '🎪 Events', value: 'info_events' },
                     { text: '📍 Location', value: 'info_location' },
                     { text: '🔙 Back', value: 'back' },
                 ];
@@ -123,10 +139,9 @@ export function createChatbotEngine() {
     function processMessage(input) {
         const r = getResponses();
         const text = input.toLowerCase().trim();
-        const results = [];
 
         // Handle back/menu at any point
-        if (text === 'back' || text === 'menu' || text === 'main menu') {
+        if (text === 'back' || text === 'menu' || text === 'main menu' || text === '🔙 back to menu') {
             state = STATES.MAIN_MENU;
             return [{ text: r.mainMenu, quickReplies: getQuickReplies() }];
         }
@@ -135,7 +150,7 @@ export function createChatbotEngine() {
             case STATES.INIT:
                 state = STATES.LANGUAGE_SELECT;
                 return [{
-                    text: "🇮🇳 Welcome to MuseumPass Bangalore! Please select your language / कृपया अपनी भाषा चुनें / ದಯವಿಟ್ಟು ನಿಮ್ಮ ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ:",
+                    text: "🇮🇳 Welcome to MuseumPass Bangalore!\n\nPlease select your language / कृपया अपनी भाषा चुनें / ದಯವಿಟ್ಟು ನಿಮ್ಮ ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ:",
                     quickReplies: getQuickReplies(),
                 }];
 
@@ -198,12 +213,12 @@ export function createChatbotEngine() {
                 if (museumIdx >= 0 && museumIdx < museums.length) {
                     selectedMuseum = museums[museumIdx];
                 } else {
-                    selectedMuseum = museums[0];
+                    return [{ text: "⚠️ Museum not found. Please select from the options:", quickReplies: getQuickReplies() }];
                 }
                 const r2 = getResponses();
                 state = STATES.MAIN_MENU;
                 return [
-                    { text: `✅ ${selectedMuseum.emoji} ${selectedMuseum.shortName} selected!` },
+                    { text: `✅ ${selectedMuseum.emoji} **${selectedMuseum.shortName}** selected!` },
                     { text: r2.mainMenu, quickReplies: getQuickReplies() },
                 ];
             }
@@ -211,19 +226,32 @@ export function createChatbotEngine() {
             case STATES.MAIN_MENU:
                 if (text.includes('book') || text === 'book' || text === '1' || text === 'ticket') {
                     state = STATES.BOOKING_DATE;
-                    bookingData = {};
-                    return [{ text: r.booking.selectDate }];
+                    bookingData = { museumName: getSelectedMuseum().shortName, museumId: getSelectedMuseum().id };
+                    return [{
+                        text: r.booking.selectDate,
+                        showDatePicker: true,
+                        quickReplies: getQuickReplies(),
+                    }];
                 } else if (text.includes('info') || text === 'info' || text === '2' || text === 'museum') {
                     state = STATES.INFO_MENU;
-                    return [{ text: r.info.menu, quickReplies: getQuickReplies() }];
+                    const museum = getSelectedMuseum();
+                    return [
+                        { text: `${museum.emoji} **${museum.shortName}**\n${museum.tagline}` },
+                        { text: r.info?.menu || "What would you like to know?", quickReplies: getQuickReplies() },
+                    ];
                 } else if (text.includes('faq') || text === 'faq' || text === '3' || text === 'question') {
                     state = STATES.FAQ_MENU;
-                    return [{ text: r.faq.menu, quickReplies: getQuickReplies() }];
-                } else if (text.includes('contact') || text === '4') {
+                    return [{ text: r.faq?.menu || "Frequently Asked Questions:", quickReplies: getQuickReplies() }];
+                } else if (text.includes('contact') || text === 'contact' || text === '4') {
+                    const museum = getSelectedMuseum();
+                    const contactMsg = `📍 **${museum.shortName}**\n\n📌 ${museum.contact.address}\n📞 ${museum.contact.phone}${museum.contact.email ? '\n📧 ' + museum.contact.email : ''}${museum.contact.website ? '\n🌐 ' + museum.contact.website : ''}`;
                     return [
-                        { text: r.info.location },
+                        { text: contactMsg },
                         { text: r.mainMenu, quickReplies: getQuickReplies() },
                     ];
+                } else if (text.includes('change') || text === 'change_museum') {
+                    state = STATES.MUSEUM_SELECT;
+                    return [{ text: "🏛️ Select a different museum:", quickReplies: getQuickReplies() }];
                 } else if (text.includes('thank') || text.includes('bye')) {
                     state = STATES.INIT;
                     return [{ text: r.thanks }];
@@ -231,17 +259,20 @@ export function createChatbotEngine() {
                 return [{ text: r.fallback, quickReplies: getQuickReplies() }];
 
             case STATES.BOOKING_DATE: {
-                const dateRegex = /\d{4}-\d{2}-\d{2}/;
-                const match = text.match(dateRegex);
-                if (match) {
-                    bookingData.date = match[0];
+                const validation = validateDate(text);
+                if (validation.valid) {
+                    bookingData.date = validation.date;
                     state = STATES.BOOKING_SLOT;
                     return [
                         { text: r.booking.dateConfirmed(bookingData.date) },
                         { text: r.booking.selectTimeSlot, quickReplies: getQuickReplies() },
                     ];
                 }
-                return [{ text: r.booking.selectDate }];
+                return [{
+                    text: validation.error,
+                    showDatePicker: true,
+                    quickReplies: getQuickReplies(),
+                }];
             }
 
             case STATES.BOOKING_SLOT: {
@@ -296,8 +327,11 @@ export function createChatbotEngine() {
                     bookingData.quantity = qty;
                     bookingData.total = qty * bookingData.price;
                     state = STATES.BOOKING_CONFIRM;
+
+                    const summaryText = `📋 **Booking Summary**\n\n🏛️ Museum: ${bookingData.museumName}\n📅 Date: ${bookingData.date}\n🕐 Time: ${bookingData.timeSlot}\n🎫 Category: ${bookingData.category}\n👥 Quantity: ${bookingData.quantity}\n💰 Total: ₹${bookingData.total.toLocaleString()}\n\n${r.booking.summary ? r.booking.summary(bookingData) : 'Confirm your booking?'}`;
+
                     return [{
-                        text: r.booking.summary(bookingData),
+                        text: summaryText,
                         quickReplies: getQuickReplies(),
                     }];
                 }
@@ -305,13 +339,16 @@ export function createChatbotEngine() {
             }
 
             case STATES.BOOKING_CONFIRM:
-                if (text.includes('yes') || text === 'confirm_yes' || text === '1') {
+                if (text.includes('yes') || text === 'confirm_yes' || text === '1' || text.includes('confirm') || text.includes('pay')) {
                     state = STATES.MAIN_MENU;
-                    return [
-                        { text: r.booking.paymentRedirect, action: 'REDIRECT_PAYMENT', bookingData: { ...bookingData } },
-                    ];
+                    return [{
+                        text: r.booking.paymentRedirect || "🔄 Redirecting to payment...",
+                        action: 'REDIRECT_PAYMENT',
+                        bookingData: { ...bookingData },
+                    }];
                 } else {
                     state = STATES.MAIN_MENU;
+                    bookingData = {};
                     return [
                         { text: r.booking.cancelled },
                         { text: r.mainMenu, quickReplies: getQuickReplies() },
@@ -321,23 +358,25 @@ export function createChatbotEngine() {
             case STATES.INFO_MENU: {
                 const infoMuseum = getSelectedMuseum();
                 if (text.includes('history') || text === '1' || text === 'info_history') {
-                    return [{ text: `🏛️ ${infoMuseum.history}`, quickReplies: getQuickReplies() }];
-                } else if (text.includes('hour') || text === '3' || text === 'info_hours') {
-                    return [{ text: `🕐 Hours:\n${infoMuseum.visitingHours.regular}\nWeekends: ${infoMuseum.visitingHours.weekend}\nClosed: ${infoMuseum.visitingHours.closed}`, quickReplies: getQuickReplies() }];
-                } else if (text.includes('rule') || text === '4' || text === 'info_rules') {
-                    return [{ text: `📋 Rules:\n${infoMuseum.rules.map(r => '• ' + r).join('\n')}`, quickReplies: getQuickReplies() }];
-                } else if (text.includes('location') || text.includes('contact') || text === '6' || text === 'info_location') {
-                    return [{ text: `📍 ${infoMuseum.contact.address}\n📞 ${infoMuseum.contact.phone}${infoMuseum.contact.email ? '\n📧 ' + infoMuseum.contact.email : ''}`, quickReplies: getQuickReplies() }];
-                } else if (text.includes('gallery') || text.includes('exhibit') || text === '2') {
+                    return [{ text: `🏛️ **${infoMuseum.shortName} — History**\n\n${infoMuseum.history}`, quickReplies: getQuickReplies() }];
+                } else if (text.includes('galler') || text.includes('exhibit') || text === '2' || text === 'info_galleries') {
                     const galleryText = infoMuseum.galleries
-                        .map(g => `${g.image} **${g.name}**\n${g.description}${g.items > 0 ? '\nExhibits: ' + g.items : ''}`)
+                        .map(g => `${g.image} **${g.name}**\n${g.description}${g.items > 0 ? '\n📊 ' + g.items.toLocaleString() + ' exhibits' : ''}`)
                         .join('\n\n');
-                    return [{ text: galleryText, quickReplies: getQuickReplies() }];
-                } else if (text.includes('event') || text === '5') {
+                    return [{ text: `🖼️ **Galleries & Exhibits**\n\n${galleryText}`, quickReplies: getQuickReplies() }];
+                } else if (text.includes('hour') || text === '3' || text === 'info_hours') {
+                    let hoursText = `🕐 **Visiting Hours**\n\n📅 Weekdays: ${infoMuseum.visitingHours.regular}\n📅 Weekends: ${infoMuseum.visitingHours.weekend}\n🚫 Closed: ${infoMuseum.visitingHours.closed}\n⏰ Last Entry: ${infoMuseum.visitingHours.lastEntry}`;
+                    if (infoMuseum.visitingHours.specialNote) hoursText += `\n📌 ${infoMuseum.visitingHours.specialNote}`;
+                    return [{ text: hoursText, quickReplies: getQuickReplies() }];
+                } else if (text.includes('rule') || text === '4' || text === 'info_rules') {
+                    return [{ text: `📋 **Museum Rules**\n\n${infoMuseum.rules.map(rule => '• ' + rule).join('\n')}`, quickReplies: getQuickReplies() }];
+                } else if (text.includes('event') || text === '5' || text === 'info_events') {
                     const eventText = infoMuseum.events
                         .map(e => `🎪 **${e.title}**\n📅 ${e.date} | ⏰ ${e.time}\n${e.description}\n💰 ${e.price}`)
                         .join('\n\n');
-                    return [{ text: eventText, quickReplies: getQuickReplies() }];
+                    return [{ text: `🎪 **Upcoming Events**\n\n${eventText}`, quickReplies: getQuickReplies() }];
+                } else if (text.includes('location') || text.includes('contact') || text === '6' || text === 'info_location') {
+                    return [{ text: `📍 **Location & Contact**\n\n📌 ${infoMuseum.contact.address}\n📞 ${infoMuseum.contact.phone}${infoMuseum.contact.email ? '\n📧 ' + infoMuseum.contact.email : ''}${infoMuseum.contact.website ? '\n🌐 ' + infoMuseum.contact.website : ''}`, quickReplies: getQuickReplies() }];
                 }
                 state = STATES.MAIN_MENU;
                 return [{ text: r.mainMenu, quickReplies: getQuickReplies() }];
@@ -367,7 +406,7 @@ export function createChatbotEngine() {
     function getInitialMessages() {
         state = STATES.LANGUAGE_SELECT;
         return [{
-            text: "🇮🇳 Welcome to Indian Museums! / भारतीय संग्रहालयों में आपका स्वागत है!\n\nPlease select your language / कृपया अपनी भाषा चुनें:",
+            text: "🇮🇳 Welcome to MuseumPass Bangalore!\n\nYour smart ticket booking assistant for Bangalore's finest museums.\n\nPlease select your language / कृपया अपनी भाषा चुनें / ದಯವಿಟ್ಟು ನಿಮ್ಮ ಭಾಷೆ ಆಯ್ಕೆಮಾಡಿ:",
             quickReplies: getQuickReplies(),
             isBot: true,
         }];

@@ -1,0 +1,153 @@
+version: "3.1"
+
+rules:
+  - rule: Greet user
+    steps:
+      - intent: greet
+      - action: action_greet
+
+  - rule: Say goodbye
+    steps:
+      - intent: goodbye
+      - action: action_goodbye
+
+  - rule: Thank user
+    steps:
+      - intent: thank
+      - action: action_thank
+
+  - rule: Set language
+    steps:
+      - intent: select_language
+      - action: action_set_language
+
+  - rule: Select museum
+    steps:
+      - intent: select_museum
+      - action: action_set_museum
+
+  - rule: Start booking
+    steps:
+      - intent: book_tickets
+      - action: action_start_booking
+
+  - rule: Process date
+    steps:
+      - intent: provide_date
+      - action: action_process_date
+
+  - rule: Set time slot
+    steps:
+      - intent: select_time_slot
+      - action: action_set_time_slot
+
+  - rule: Set category
+    steps:
+      - intent: select_category
+      - action: action_set_category
+
+  - rule: Set quantity and ask contact
+    steps:
+      - intent: select_quantity
+      - action: action_set_quantity
+
+  - rule: Confirm booking
+    steps:
+      - intent: confirm_booking
+      - action: action_confirm_payment
+
+  - rule: Add more tickets
+    steps:
+      - intent: add_more_tickets
+      - action: action_show_categories
+
+  - rule: Cancel booking
+    steps:
+      - intent: cancel_booking
+      - action: action_booking_cancelled
+      - action: action_main_menu
+
+  - rule: Show museum info menu
+    steps:
+      - intent: museum_info
+      - action: action_info_menu
+
+  - rule: Show museum history
+    steps:
+      - intent: ask_history
+      - action: action_show_museum_history
+
+  - rule: Show galleries
+    steps:
+      - intent: ask_galleries
+      - action: action_show_galleries
+
+  - rule: Show hours
+    steps:
+      - intent: ask_hours
+      - action: action_show_hours
+
+  - rule: Show rules
+    steps:
+      - intent: ask_rules
+      - action: action_show_rules
+
+  - rule: Show events
+    steps:
+      - intent: ask_events
+      - action: action_show_events
+
+  - rule: Show contact
+    steps:
+      - intent: ask_contact
+      - action: action_show_contact
+
+  - rule: Show FAQ menu
+    steps:
+      - intent: ask_faq
+      - action: action_faq_menu
+
+  - rule: FAQ cancel
+    steps:
+      - intent: faq_cancel
+      - action: action_faq_cancel
+
+  - rule: FAQ parking
+    steps:
+      - intent: faq_parking
+      - action: action_faq_parking
+
+  - rule: FAQ wheelchair
+    steps:
+      - intent: faq_wheelchair
+      - action: action_faq_wheelchair
+
+  - rule: FAQ cafe
+    steps:
+      - intent: faq_cafe
+      - action: action_faq_cafe
+
+  - rule: FAQ guided tour
+    steps:
+      - intent: faq_guided_tour
+      - action: action_faq_guided_tour
+
+  - rule: Change museum
+    steps:
+      - intent: change_museum
+      - action: action_change_museum
+
+  - rule: Set mobile number
+    steps:
+      - intent: provide_mobile_number
+      - action: action_set_mobile
+
+  - rule: Set email
+    steps:
+      - intent: provide_email
+      - action: action_set_email
+
+  - rule: Fallback
+    steps:
+      - intent: nlu_fallback
+      - action: action_default_fallback

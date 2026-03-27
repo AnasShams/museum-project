@@ -35,7 +35,7 @@ export default function AdminLogin() {
                         <FaLandmark className="text-navy text-3xl" />
                     </div>
                     <h1 className="text-2xl font-heading font-bold text-soft-white">Admin Portal</h1>
-                    <p className="text-lgray-dark text-sm mt-1">National Museum Management System</p>
+                    <p className="text-lgray-dark text-sm mt-1">MuseumPass Management System</p>
                 </div>
 
                 {/* Login Card */}

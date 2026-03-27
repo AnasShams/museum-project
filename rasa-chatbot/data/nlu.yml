@@ -1,0 +1,420 @@
+version: "3.1"
+
+nlu:
+  - intent: greet
+    examples: |
+      - hi
+      - hello
+      - hey
+      - good morning
+      - good afternoon
+      - good evening
+      - hi there
+      - hey there
+      - hello there
+      - howdy
+      - what's up
+      - sup
+      - greetings
+      - namaste
+      - namaskar
+      - start
+      - begin
+
+  - intent: goodbye
+    examples: |
+      - goodbye
+      - bye
+      - see you
+      - see you later
+      - take care
+      - have a good day
+      - bye bye
+      - good night
+      - quit
+      - exit
+      - tata
+      - cya
+
+  - intent: thank
+    examples: |
+      - thank you
+      - thanks
+      - thanks a lot
+      - thank you so much
+      - thanks a bunch
+      - appreciate it
+      - much appreciated
+      - thanks for helping
+      - dhanyavad
+      - shukriya
+
+  - intent: select_language
+    examples: |
+      - [English](language)
+      - [Hindi](language)
+      - [Kannada](language)
+      - [Tamil](language)
+      - [Telugu](language)
+      - [Bengali](language)
+      - [Marathi](language)
+      - [Gujarati](language)
+      - [Malayalam](language)
+      - [Punjabi](language)
+      - [Odia](language)
+      - [Assamese](language)
+      - [Urdu](language)
+      - [en](language)
+      - [hi](language)
+      - [kn](language)
+      - [ta](language)
+      - [te](language)
+      - [bn](language)
+      - [mr](language)
+      - [gu](language)
+      - [ml](language)
+      - [pa](language)
+      - [or](language)
+      - [as](language)
+      - [ur](language)
+
+  - intent: select_museum
+    examples: |
+      - [visvesvaraya](museum_name)
+      - [govt-museum](museum_name)
+      - [hal-aerospace](museum_name)
+      - [ngma](museum_name)
+      - [bangalore-palace](museum_name)
+      - [tipu-palace](museum_name)
+      - [nehru-planetarium](museum_name)
+      - [ime](museum_name)
+      - I want to visit [Visvesvaraya](museum_name) museum
+      - take me to [HAL Aerospace](museum_name)
+      - [Government Museum](museum_name) please
+      - I'd like to go to [Bangalore Palace](museum_name)
+      - show me [NGMA](museum_name)
+      - [Tipu Sultan's Palace](museum_name)
+      - book for [Nehru Planetarium](museum_name)
+      - [Indian Music Experience](museum_name)
+
+  - intent: book_tickets
+    examples: |
+      - book tickets
+      - I want to book tickets
+      - book a ticket
+      - buy tickets
+      - purchase tickets
+      - get tickets
+      - I'd like to book
+      - want to book
+      - ticket booking
+      - book now
+      - reserve tickets
+      - make a booking
+      - I need tickets
+      - can I book tickets
+      - booking please
+      - let me book
+      - start booking
+      - book [3](quantity) tickets for [tomorrow](date)
+      - I want [2](quantity) [adult](ticket_category) tickets for [2026-03-30](date)
+      - book [4](quantity) tickets
+      - book for [tomorrow](date)
+      - need [1](quantity) [student](ticket_category) ticket for [2026-04-01](date) morning [10:00 AM - 11:30 AM](time_slot)
+      - [2](quantity) tickets
+      - book [5](quantity) [child](ticket_category) tickets
+      - [3](quantity) [adults](ticket_category) tickets [2](quantity) [kids](ticket_category) tickets [tomorrow](date)
+      - book [1](quantity) [adult](ticket_category) and [3](quantity) [kids](ticket_category) for [today](date)
+      - [4](quantity) [adult](ticket_category) and [2](quantity) [child](ticket_category) tickets
+      - I need [2](quantity) [senior](ticket_category) and [1](quantity) [child](ticket_category) tickets
+
+  - intent: provide_date
+    examples: |
+      - [2026-03-28](date)
+      - [2026-03-29](date)
+      - [2026-03-30](date)
+      - [2026-04-01](date)
+      - [2026-04-02](date)
+      - [2026-04-05](date)
+      - [2026-04-10](date)
+      - [2026-04-15](date)
+      - [2026-04-20](date)
+      - [2026-04-25](date)
+      - my date is [2026-03-28](date)
+      - I want to visit on [2026-04-01](date)
+      - on [2026-03-30](date)
+      - date [2026-04-05](date)
+
+  - intent: select_time_slot
+    examples: |
+      - [10:00 AM - 11:30 AM](time_slot)
+      - [11:30 AM - 1:00 PM](time_slot)
+      - [1:00 PM - 2:30 PM](time_slot)
+      - [2:30 PM - 4:00 PM](time_slot)
+      - [4:00 PM - 5:30 PM](time_slot)
+      - [5:30 PM - 7:00 PM](time_slot)
+      - slot [1](time_slot)
+      - slot [2](time_slot)
+      - slot [3](time_slot)
+      - slot [4](time_slot)
+      - slot [5](time_slot)
+      - slot [6](time_slot)
+      - first slot
+      - morning slot
+      - afternoon slot
+      - evening slot
+
+  - intent: select_category
+    examples: |
+      - [Adult](ticket_category)
+      - [Child](ticket_category)
+      - [Senior Citizen](ticket_category)
+      - [Student](ticket_category)
+      - [Foreign National](ticket_category)
+      - [adult](ticket_category) ticket
+      - I am a [student](ticket_category)
+      - [child](ticket_category) tickets please
+      - [senior](ticket_category)
+      - I'm a [foreign national](ticket_category)
+      - category [1](ticket_category)
+      - category [2](ticket_category)
+      - category [3](ticket_category)
+      - category [4](ticket_category)
+      - category [5](ticket_category)
+
+  - intent: select_quantity
+    examples: |
+      - [1](quantity)
+      - [2](quantity)
+      - [3](quantity)
+      - [4](quantity)
+      - [5](quantity)
+      - [6](quantity)
+      - [7](quantity)
+      - [8](quantity)
+      - [9](quantity)
+      - [10](quantity)
+      - I need [2](quantity) tickets
+      - [3](quantity) tickets please
+      - just [1](quantity)
+      - give me [4](quantity)
+      - we are [5](quantity) people
+
+  - intent: confirm_booking
+    examples: |
+      - confirm
+      - yes confirm
+      - proceed to payment
+      - confirm and pay
+      - yes
+      - go ahead
+      - proceed
+      - confirm booking
+      - pay now
+      - let's pay
+      - yes please
+      - that's correct
+      - looks good
+      - perfect
+
+  - intent: add_more_tickets
+    examples: |
+      - add more tickets
+      - I want to add another category
+      - add another category
+      - add more
+      - choose another one
+      - add kids
+      - select more tickets
+      - add more people
+
+  - intent: cancel_booking
+    examples: |
+      - cancel
+      - no
+      - cancel booking
+      - I don't want to book
+      - never mind
+      - stop
+      - abort
+      - go back
+      - no thanks
+      - not now
+
+  - intent: museum_info
+    examples: |
+      - museum information
+      - tell me about the museum
+      - museum info
+      - what's in the museum
+      - museum details
+      - show museum info
+      - I want information
+      - about this museum
+      - describe the museum
+      - info please
+
+  - intent: ask_history
+    examples: |
+      - museum history
+      - tell me the history
+      - when was it established
+      - history of this museum
+      - about the museum's past
+      - how old is this museum
+      - origin of the museum
+
+  - intent: ask_galleries
+    examples: |
+      - galleries
+      - show galleries
+      - what galleries are there
+      - exhibits
+      - exhibitions
+      - what can I see
+      - show me the exhibits
+      - gallery list
+
+  - intent: ask_hours
+    examples: |
+      - visiting hours
+      - opening hours
+      - when is it open
+      - timings
+      - what time does it open
+      - museum timings
+      - schedule
+      - when can I visit
+      - working hours
+
+  - intent: ask_rules
+    examples: |
+      - rules
+      - museum rules
+      - what are the rules
+      - guidelines
+      - restrictions
+      - what should I know
+      - dos and donts
+      - museum guidelines
+
+  - intent: ask_events
+    examples: |
+      - events
+      - upcoming events
+      - any events
+      - shows
+      - exhibitions
+      - what's happening
+      - current events
+      - upcoming shows
+      - any special events
+
+  - intent: ask_contact
+    examples: |
+      - contact
+      - phone number
+      - address
+      - location
+      - how to reach
+      - where is the museum
+      - email
+      - contact details
+      - how to contact
+      - directions
+
+  - intent: ask_faq
+    examples: |
+      - FAQ
+      - frequently asked questions
+      - common questions
+      - help
+      - I have a question
+      - FAQs
+      - questions
+      - need help
+
+  - intent: faq_cancel
+    examples: |
+      - can I cancel my booking
+      - cancellation policy
+      - how to cancel
+      - cancel my ticket
+      - refund policy
+      - can I get a refund
+
+  - intent: faq_parking
+    examples: |
+      - is parking available
+      - where can I park
+      - parking facility
+      - car parking
+      - two wheeler parking
+      - parking charges
+
+  - intent: faq_wheelchair
+    examples: |
+      - wheelchair
+      - is wheelchair available
+      - accessibility
+      - disabled access
+      - handicapped access
+      - ramp access
+      - wheelchair facility
+
+  - intent: faq_cafe
+    examples: |
+      - is there a cafe
+      - food
+      - restaurant
+      - cafeteria
+      - where to eat
+      - snacks
+      - can I get food inside
+      - canteen
+
+  - intent: faq_guided_tour
+    examples: |
+      - guided tour
+      - tour guide
+      - can I get a guide
+      - guided visit
+      - audio guide
+      - personal guide
+      - tour available
+
+  - intent: change_museum
+    examples: |
+      - change museum
+      - different museum
+      - switch museum
+      - go to another museum
+      - select another museum
+      - I want to change the museum
+      - pick another museum
+      - show other museums
+
+  - intent: provide_mobile_number
+    examples: |
+      - my number is [9876543210](mobile_number)
+      - [1234567890](mobile_number)
+      - use [9998887776](mobile_number) for the tickets
+      - call me at [9876543210](mobile_number)
+      - mobile is [9123456789](mobile_number)
+      - [9876543210](mobile_number) is the number
+      
+  - intent: provide_email
+    examples: |
+      - my email is [test@example.com](email)
+      - [john.doe@gmail.com](email)
+      - send it to [booking@museum.com](email)
+      - [visitor123@yahoo.co.in](email)
+      - email: [steve@apple.com](email)
+
+  - regex: mobile_number
+    examples: |
+      - \b\d{10}\b
+      
+  - regex: email
+    examples: |
+      - \b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+\b
